@@ -7,9 +7,14 @@ namespace FakeNetTest
     {
         static void Main(string[] args)
         {
+            //Requirements:
+            //Folder in D:\Communications
+            //\Communications 0 and 1 must be created
+            //If you do not have a D drive change the path in the folder variable to reflect that 
+
             Console.WriteLine("Sample network test to attempt simulating a network connection between two consoles on the same computer.");
             Console.WriteLine("This works by creating two directories in the filesystem that talk to one another through text files.");
-            Console.WriteLine("Please enter 1 or 2. Don't make it something already in use"); //If this works this is something I want changed; we should check if directory exists and reject if it does
+            Console.WriteLine("Please enter 0 or 1, and enter the opposite in the other console."); //If this works this is something I want changed; we should check if directory exists and reject if it does
             String designation = Console.ReadLine(); //Sanitize
             Communicator c = new Communicator(designation);
             Communicator.Listen();
@@ -50,7 +55,7 @@ namespace FakeNetTest
             String readpath = @"D:\Communications" + "\\" + designation;
             watcher.Path = readpath;
             watcher.Created += OnCreate;
-            Console.WriteLine("Now listening to {0}", readpath);
+            Console.WriteLine("Now listening to {0}", readpath); //This will error if readpath has not yet been created. Best to create both before testing (Fix)
             watcher.EnableRaisingEvents = true;
             Console.WriteLine("Please enter a message to send to the other client. Type Q to quit.");
             string msg = Console.ReadLine();
@@ -58,7 +63,7 @@ namespace FakeNetTest
             while(!msg.Equals("q"))
             {
                 String filepath = writepath + "\\" + i.ToString() + ".txt";
-                Console.WriteLine("Writing to {0}", filepath);
+                Console.WriteLine("Message sent!");
                 if (!File.Exists(filepath))
                 {
                     using (StreamWriter sw = File.CreateText(filepath))
@@ -73,14 +78,14 @@ namespace FakeNetTest
 
         private static void OnCreate(object source, FileSystemEventArgs e)
         {
-            Thread.Sleep(1000); //Wait for the file to finish being written to otherwise it bugs out
+            Thread.Sleep(50);
             try
             {   // Open the text file using a stream reader.
                 using (StreamReader sr = new StreamReader(e.FullPath))
                 {
                     // Read the stream to a string, and write the string to the console.
                     String line = sr.ReadToEnd();
-                    Console.WriteLine(line);
+                    Console.WriteLine("Message recieved: " + line);
                 }
             }
             catch (IOException f)
